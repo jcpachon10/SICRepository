@@ -1,0 +1,7 @@
+Time: 34
+Volumen ocupado = 375000
+200	200	50
+Id	Piece	in	x	y	z	qw	qx	qy	qz
+0	0	1	0	50	0	1	0	0	0
+1	1	1	0	0	0	1	0	0	0
+2	2	1	0	100	0	1	0	0	0

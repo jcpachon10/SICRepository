@@ -1,0 +1,16 @@
+{
+"companyName": "UniversidadDeLosAndes",
+"productName": "Grids",
+"productVersion": "0.1",
+"dataUrl": "SIC Web.data.unityweb",
+"wasmCodeUrl": "SIC Web.wasm.code.unityweb",
+"wasmFrameworkUrl": "SIC Web.wasm.framework.unityweb",
+"graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
+"webglContextAttributes": {"preserveDrawingBuffer": false},
+"splashScreenStyle": "Dark",
+"backgroundColor": "#231F20",
+"cacheControl": {"default": "must-revalidate"},
+"developmentBuild": false,
+"multithreading": false,
+"unityVersion": "2019.4.20f1"
+}
