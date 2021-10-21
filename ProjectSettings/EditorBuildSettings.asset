@@ -18,7 +18,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Loding 2.unity
     guid: 285bcc1e705b697418defc747e4e0cb3
   - enabled: 1
-    path: Assets/Scenes/Principal Cube 1.unity
+    path: Assets/Scenes/PrincipalCubes1.unity
     guid: 22e3cd47171bb9647911cd97a3dbe77e
   - enabled: 1
     path: Assets/Scenes/PrincipalRegular.unity

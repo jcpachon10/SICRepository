@@ -303,7 +303,7 @@ public class PackageManajer : MonoBehaviour
         pcs_Input.text = 1 + "";
         client_input.text = 0 + "";
         Nombre_proyecto.text = "Proyecto_1";
-        resizeContainer(new Vector3(10.2f,2.27f,2.43f));
+        resizeContainer(new Vector3(2.2f,2.27f,2.43f));
     }
 
     // Update is called once per frame
@@ -755,6 +755,7 @@ public class PackageManajer : MonoBehaviour
         resizeContainer(new Vector3(float.Parse(split[2]), float.Parse(split[4]), float.Parse(split[3])) / 100);
         ;
         //Second Line
+        //Second Line
         text = reader.ReadLine();
         split = text.Split('\t');
         volumen_ocupado = float.Parse(split[0]) / 1000000;
@@ -764,6 +765,7 @@ public class PackageManajer : MonoBehaviour
         numGroups = 0;
         //Validate maxWieght
         bool maxWeightValidator=true;
+        float pesoaux = 0;
         //----
         for (int i = 2; i < lines.Length; i++)
         {
@@ -785,10 +787,62 @@ public class PackageManajer : MonoBehaviour
 
             //Read pType
             PackageType pType = pTypes[packId];
-            //Calcular peso
            
+            pesoaux += (pType.weight) / 10000;
+            if (maxWeight_bol && maxWeight < pesoaux)
+            {
+                maxWeightValidator = false;
+            }
             if (packPosition.x < containerSize.x && maxWeightValidator)
             {
+                peso += (pType.weight) / 10000;
+               //add position
+               pType.AddPosition(packPosition, endPosition);
+                //----------------------------
+                //Cargar los paquetes
+                //-----------------------------
+
+                if (packGroup != numGroups)
+                {
+
+                    snapCam.group = packGroup - 1;
+                    snapCam.callTakeSnapShot();
+                    await Task.Delay(5);
+                    numGroups = packGroup;
+                }
+
+                // Crear paquetes en base al prefab
+                GameObject go = GameObject.Instantiate(packagePrefab);
+                go.transform.SetParent(parent);
+                packages.Add(go);
+                go.GetComponent<Package>().setPackageValues(endPosition - packPosition
+                    , packPosition, packId, packageColor[packId], pType.weight, packClient, packGroup, pType.Name1);
+                Vector3 size1 = endPosition - packPosition;
+
+                if (i == lines.Length - 1)
+                {
+
+                    snapCam.group = packGroup;
+                    snapCam.callTakeSnapShot();
+                    await Task.Delay(5);
+                    numGroups = packGroup;
+                }
+
+            }
+            else 
+            {
+                bool keyExists = intermedio.ContainsKey(packId);
+                if (!keyExists)
+                {
+                    intermedio.Add(packId, 0f);
+                }
+                intermedio[packId] += 1f;
+            }
+            /*
+            //Define alaments inside of the container
+            if (packPosition.x < containerSize.x && maxWeightValidator)
+            {
+                //weight
                 peso += (pType.weight) / 10000;
                 if(maxWeight_bol && maxWeight<peso)
                 {
@@ -852,7 +906,7 @@ public class PackageManajer : MonoBehaviour
             }
 
             //----
-
+            */
         }
         label_peso.text = peso + " kg";
         reader.Close();
@@ -1551,7 +1605,7 @@ public class PackageManajer : MonoBehaviour
             array_quantity[j] = 0;
         }
         //Resize the list of objects
-        Lista.sizeDelta = new Vector2(Lista.sizeDelta.x, 370.4893f);
+        Lista.sizeDelta = new Vector2(Lista.sizeDelta.x, 387.721f);
        
     }
     //---------------------------------------------------- 
@@ -1790,11 +1844,11 @@ public class PackageManajer : MonoBehaviour
                             int clientID = int.Parse(split1[2]);
                             string name = split1[1];
                             newPackage(packSize, verticalPostP, maxForceP, quantity, weight, false, packId, clientID, name);
-                            /* updatePackageValues(packId, packSize, verticalPostP,
+                            updatePackageValues(packId, packSize, verticalPostP,
                                  new Vector3(Mathf.Floor(maxForceP.x * 10000f / (packSize.x * packSize.y)),
                                  Mathf.Floor(maxForceP.y * 10000f / (packSize.y * packSize.z)),
                                  Mathf.Floor(maxForceP.z * 10000f / (packSize.x * packSize.z))
-                                 ), quantity, weight, name, client);*/
+                                 ), quantity, weight, name, client);
                         }
 
                     }
@@ -2040,11 +2094,13 @@ public class PackageManajer : MonoBehaviour
             
             int i = (int)j;
             int quantity = (int)intermedio[j];
-            CopypTypes[i].maxForce.x = Mathf.Floor(CopypTypes[i].maxForce.x * (CopypTypes[i].packageSize.x * CopypTypes[i].packageSize.y) / 10000f);
-            CopypTypes[i].maxForce.y = Mathf.Floor(CopypTypes[i].maxForce.y * (CopypTypes[i].packageSize.y * CopypTypes[i].packageSize.z) / 10000f);
-            CopypTypes[i].maxForce.z = Mathf.Floor(CopypTypes[i].maxForce.z * (CopypTypes[i].packageSize.x * CopypTypes[i].packageSize.z) / 10000f);
+            Vector3 UIForce = new Vector3();
+            UIForce.x = Mathf.Ceil(CopypTypes[i].maxForce.x * (CopypTypes[i].packageSize.x * CopypTypes[i].packageSize.y) / 10000f);
+            UIForce.y = Mathf.Ceil(CopypTypes[i].maxForce.y * (CopypTypes[i].packageSize.y * CopypTypes[i].packageSize.z) / 10000f);
+            UIForce.z = Mathf.Ceil(CopypTypes[i].maxForce.z * (CopypTypes[i].packageSize.x * CopypTypes[i].packageSize.z) / 10000f);
             Debug.Log("EL que se va a añadir es " + counter);
-            newPackage(CopypTypes[i].packageSize, CopypTypes[i].verticalPos, CopypTypes[i].maxForce,quantity, CopypTypes[i].weight,true, counter,CopypTypes[i].clientId, CopypTypes[i].Name1);
+            newPackage(CopypTypes[i].packageSize, CopypTypes[i].verticalPos, UIForce, quantity, CopypTypes[i].weight,true, counter,CopypTypes[i].clientId, CopypTypes[i].Name1);
+            updatePackageValues(counter, CopypTypes[i].packageSize, CopypTypes[i].verticalPos, CopypTypes[i].maxForce, quantity, CopypTypes[i].weight, CopypTypes[i].Name1, CopypTypes[i].clientId);
             counter++;
         }
         Titulo.text = Titulo.text + "(" + counter_title + ")";
