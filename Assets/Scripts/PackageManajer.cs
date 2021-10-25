@@ -696,8 +696,9 @@ public class PackageManajer : MonoBehaviour
                 //Sesquia (Alcanzable)
                 //Juanqueria (pared)
                 //Nombre opcion(1-Clientes(Se pueden apilar) 2-Pesos 3-Pared invisibles)
-                startInfo.Arguments = string.Format("{0}/StreamingAssets/Multidrop/{1}",
-                UnityEngine.Application.dataPath, "file.txt 1   1   1   3   2  20");
+                //startInfo.Arguments = string.Format("{0}/StreamingAssets/Multidrop/{1}",
+                //UnityEngine.Application.dataPath, "file.txt 1   1   1   3   2  20");
+                 startInfo.Arguments = "file.txt 1   1   1   3   2  20";
                 //StartInfo.Arguments = "Extra Arguments to Pass to the Program";
                 startInfo.CreateNoWindow = true;
                 startInfo.WindowStyle = ProcessWindowStyle.Hidden;
@@ -1605,7 +1606,7 @@ public class PackageManajer : MonoBehaviour
             array_quantity[j] = 0;
         }
         //Resize the list of objects
-        Lista.sizeDelta = new Vector2(Lista.sizeDelta.x, 387.721f);
+        Lista.sizeDelta = new Vector2(Lista.sizeDelta.x, 388.721f);
        
     }
     //---------------------------------------------------- 

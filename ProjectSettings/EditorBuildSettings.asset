@@ -21,7 +21,7 @@ EditorBuildSettings:
     path: Assets/Scenes/PrincipalCubes1.unity
     guid: 22e3cd47171bb9647911cd97a3dbe77e
   - enabled: 1
-    path: Assets/Scenes/PrincipalRegular.unity
+    path: Assets/Scenes/PrincipalIrregular.unity
     guid: 5284898f7b386f74f9c334f6eb7fc15a
   - enabled: 0
     path: 
