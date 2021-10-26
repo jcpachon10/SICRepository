@@ -1,0 +1,44 @@
+20	2
+
+220	243	227
+
+0	41	0	30	0	39	1	27	160000	4000000	4000000	1300	1	0	Caja Monofasica Distrib 9 Circuitos
+
+1	17	0	17	0	19	1	37	50000	4000000	4000000	1660	1	0	Anticorrosivo Gris Mate
+
+2	3	0	8	0	3	1	72	10000	4000000	4000000	416	1	0	"Adaptador Macho Acomedida Domiciliaria PEAD 1/2"""""
+
+3	12	0	32	0	17	1	75	20000	4000000	4000000	312	1	0	Bota De Seguridad Talla 39
+
+4	58	0	14	0	15	1	55	70000	4000000	4000000	862	1	0	Palín Bananero para Desmachar
+
+5	39	0	59	0	36	1	43	30000	4000000	4000000	91	1	0	"Codo 45° Soldable 1 1/2"""" X 25 un."
+
+6	16	0	16	0	51	1	22	10000	4000000	4000000	195	1	0	Set 50 Esferas Navidad 6 cm Rojo y Verde - easy
+
+7	30	0	31	0	10	1	61	130000	4000000	4000000	1311	1	0	Cerámicas Hidraulico Negro caja por 10 und
+
+8	9	0	5	0	30	1	58	10000	4000000	4000000	444	1	0	"Formón, mango comfort grip, 5/8"""
+
+9	11	0	11	0	13	1	82	20000	4000000	4000000	1239	1	0	Anticorrosivo Gris 1/4 gal
+
+10	15	0	20	0	5	1	89	10000	4000000	4000000	333	1	0	"Broca Mamposteria Premium 1/4""""X6"""""
+
+11	7	0	20	0	2	1	81	10000	4000000	4000000	71	1	0	Guante De Poliuretano Flex  G40 Talla 10
+
+12	29	0	19	0	19	1	83	30000	4000000	4000000	381	1	0	Pistola Sopladora 550 W 14000 Rpm
+
+13	11	0	11	0	21	1	29	10000	4000000	4000000	247	1	0	Candado laminado, 45mm, gancho corto, blíster
+
+14	43	0	38	0	35	1	75	10000	4000000	4000000	36	1	0	"Pistola De Calafateo 9"""" 1 x 235 mm"
+
+15	20	0	25	0	8	1	90	10000	4000000	4000000	200	1	0	"Llave L. Hex . Corta. 7/16"""""
+
+16	17	0	17	0	19	1	28	60000	4000000	4000000	1937	1	0	Viniltex Advanced Verde Aceituna: 1572
+
+17	18	0	18	0	22	1	84	110000	4000000	4000000	3240	1	0	"Yee Sanitaria Reducida - 3x2"""" x 30 und"
+
+18	25	0	25	0	10	1	30	10000	4000000	4000000	160	1	0	Paño De Limpieza Industrial x 60- 1 Rollo x 300 m
+
+19	11	0	11	0	14	1	5	10000	4000000	4000000	413	1	0	Mapeband Easy Rollo 13cm x 10m
+
