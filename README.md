@@ -1,7 +1,7 @@
 [![MIT License](https://img.shields.io/badge/license-GPLv3-blue.svg?style=for-the-badge)](https://github.com/jcpachon10/SICRepository/LICENCE)
 ## What is SIC ?
-- Software generates  packing  patterns  from  user-defined instances of the Container Loading Problem for regular and irregular cargo crafted in unity.
-- Provides convenient tool to generate, edit, save, export and delete containers loading plans.
+- SIC is a software package that generates  packing  patterns  from  user-defined instances of the Container Loading Problem for regular and irregular cargo crafted in unity.
+- It provides convenient tool to generate, edit, save, export and delete containers loading plans.
 
 ## Dependencies:
 _Unity_, _IBM ILOG CPLEX Optimization Studio 20.10 in its academic version_, _LeanTween_ 
