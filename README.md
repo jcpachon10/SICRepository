@@ -6,4 +6,4 @@
 _Unity_, _IBM ILOG CPLEX Optimization Studio 20.10 in its academic version_, _LeanTween_ 
 
 ### Install executable
-Downloads in the ['Releases'](https://github.com/jcmartinez10/PackageCargo/releases) 
+Downloads in the ['SIC_Executable'](https://github.com/jcpachon10/SICRepository/SIC_Executable) 
