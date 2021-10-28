@@ -67,6 +67,10 @@ public class CameraControl : MonoBehaviour
         {
             transform.RotateAround(currentObjective.position, Vector3.up, camSpeed * Input.GetAxis("Mouse X") * -1);
             transform.RotateAround(currentObjective.position, Vector3.forward, camSpeed * Input.GetAxis("Mouse Y") * 1);
+            if (transform.position.y < 0)
+            {
+                transform.position =new Vector3(transform.position.x, 0f, transform.position.z);
+            }
 
         }
         transform.LookAt(currentObjective);

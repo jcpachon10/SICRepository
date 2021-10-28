@@ -57,6 +57,7 @@ public class PackageManajer : MonoBehaviour
         //orden de cargue 
         //Nombre del paquete
         public string Name1;
+
         //----------------------------
         //Methods
         //----------------------------
@@ -198,6 +199,8 @@ public class PackageManajer : MonoBehaviour
     int[] array_quantity = new int[100];
     //Indicator of total volume
     public Text total_Volume;
+    //Indicartor of used Volume
+    public Text used_Volume;
     //Indicator of free volume
     public Text free_Volume;
     //Indicator of total weight
@@ -267,6 +270,8 @@ public class PackageManajer : MonoBehaviour
     public InputField maxWeight_iF;
     private float maxWeight;
     private bool maxWeight_bol;
+    //Select type
+    private int selectType_int;
     //----------------------------------
     //METHODS
     //----------------------------------
@@ -345,6 +350,7 @@ public class PackageManajer : MonoBehaviour
 
         volumen_total = containerSize.x * containerSize.y * containerSize.z;
         total_Volume.text = volumen_total + " m3";
+        used_Volume.text = volumen_ocupado+" m3";
         free_Volume.text = volumen_total - volumen_ocupado + " m3";
         nombre_container.text = "Contenedor "+containerTransform.localScale.x+" m x "+
             containerTransform.localScale.y + " m x "+
@@ -1345,6 +1351,7 @@ public class PackageManajer : MonoBehaviour
         float free_vaolume_ = (float.Parse(split[0]) - float.Parse(split[1]))/1000000;
         total_Volume.text = total_vaolume_ + " m3";
         free_Volume.text = free_vaolume_ + " m3";
+        used_Volume.text = (total_vaolume_ - free_vaolume_) + " m3";
         //Read the packages
         string[] lines1 = System.IO.File.ReadAllLines(path1);
 
@@ -1530,7 +1537,7 @@ public class PackageManajer : MonoBehaviour
 
                 snapCam.group = packGroup - 1;
                 snapCam.callTakeSnapShot();
-                await Task.Delay(400);
+                await Task.Delay(100);
                 numGroups = packGroup;
             }
             GameObject go = GameObject.Instantiate(packagePrefab);
@@ -1544,7 +1551,7 @@ public class PackageManajer : MonoBehaviour
             {
                 snapCam.group = packGroup;
                 snapCam.callTakeSnapShot();
-                await Task.Delay(400);
+                await Task.Delay(100);
                 numGroups = packGroup;
             }
 
@@ -2168,10 +2175,13 @@ public class PackageManajer : MonoBehaviour
         process.Kill();
         bloking.SetActive(false);
     }
+    //Weight Limit
+    //Define if the weight constrain is active
     public void activeMaxWeight( bool active)
     {
         maxWeight_bol =active;
     }
+    //Validate if the maxWeight containa point
     public void changeMaxWeight()
     {
         if(maxWeight_iF.text.Contains("."))
@@ -2182,6 +2192,66 @@ public class PackageManajer : MonoBehaviour
         {
             maxWeight= float.Parse(maxWeight_iF.text);
         }
+    }
+    //Select the Type of boxes
+    public void selectType(Text ID)
+    {
+        ArePackage();
+        int id;
+        int id_Select;
+        
+        id_Select = int.Parse(ID.text);
+        if (selectType_int == id_Select)
+        {
+            selectType_int = -1;
+            foreach (Transform child in parent)
+            {
+                GameObject go = child.gameObject;
+                go.GetComponent<Renderer>().enabled = true;
+
+                foreach (Transform name in child)
+                {
+                    if (!name.name.Contains("Select"))
+                    {
+                        name.gameObject.SetActive(true);
+                    }
+                }
+            }
+        }
+        else
+        {
+            selectType_int = id_Select;
+            foreach (Transform child in parent)
+            {
+                GameObject go = child.gameObject;
+                id = go.GetComponent<Package>().itemId;
+
+                if (id != id_Select)
+                {
+                    go.GetComponent<Renderer>().enabled = false;
+
+                    foreach (Transform name in child)
+                    {
+
+                        name.gameObject.SetActive(false);
+                    }
+                }
+                else
+                {
+                    go.GetComponent<Renderer>().enabled = true;
+
+                    foreach (Transform name in child)
+                    {
+                        if (!name.name.Contains("Select"))
+                        {
+                            name.gameObject.SetActive(true);
+                        }
+                    }
+                }
+            }
+
+        }
+
     }
     
 }
