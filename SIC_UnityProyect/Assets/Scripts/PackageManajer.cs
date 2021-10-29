@@ -272,6 +272,15 @@ public class PackageManajer : MonoBehaviour
     private bool maxWeight_bol;
     //Select type
     private int selectType_int;
+    //Pallet
+    public GameObject pallet;
+    //Truck
+    public GameObject truck;
+    //floor
+    public GameObject floor;
+    //Panel of Loading spaces
+    public GameObject loadingSpacesPanel;
+    //Truck
     //----------------------------------
     //METHODS
     //----------------------------------
@@ -2252,6 +2261,21 @@ public class PackageManajer : MonoBehaviour
 
         }
 
+    }
+
+    public void activePallet()
+    {
+        loadingSpacesPanel.SetActive(false);
+        truck.SetActive(false);
+        pallet.SetActive(true);
+        floor.transform.position=new Vector3(0.7558f, -0.25f,0);
+    }
+    public void activeTruck()
+    {
+        loadingSpacesPanel.SetActive(false);
+        pallet.SetActive(false);
+        truck.SetActive(true);
+        floor.transform.position = new Vector3(0.7558f, -1.25f, 0);
     }
     
 }
