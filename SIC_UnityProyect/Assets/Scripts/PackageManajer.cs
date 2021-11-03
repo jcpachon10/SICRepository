@@ -936,7 +936,7 @@ public class PackageManajer : MonoBehaviour
     //--------------------------------------------------------------
     public void NewPackageButtom()
     {
-        int idP = 0;
+        int idP = 1;
         while (pTypes.ContainsKey(idP))
         {
             idP++;
