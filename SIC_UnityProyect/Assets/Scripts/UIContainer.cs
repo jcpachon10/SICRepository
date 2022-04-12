@@ -7,6 +7,40 @@ using UnityEngine.UI;
  */
 public class UIContainer : MonoBehaviour
 {
+
+
+    public class ContainerType
+    {
+        //----------------------------------
+        //PUBLIC VARIABLES
+        //----------------------------------
+
+        //The id of the container
+        public int containerID;
+        public Vector3 containerSize;
+        public string containerName;
+        public int containerQuantity;
+        public float containerWLimit;
+        public ContainerType(int containerIDP, Vector3 containerSizeP, string containerNameP, int containerQuantityP, float containerWLimitP)
+        {
+            containerID= containerIDP;
+            containerSize= containerSizeP;
+            containerName= containerNameP;
+            containerQuantity= containerQuantityP;
+            containerWLimit= containerWLimitP;
+        }
+
+        public void updateContainerType(int containerIDP, Vector3 containerSizeP, string containerNameP, int containerQuantityP, float containerWLimitP)
+        {
+
+            containerID = containerIDP;
+            containerSize = containerSizeP;
+            containerName = containerNameP;
+            containerQuantity = containerQuantityP;
+            containerWLimit = containerWLimitP;
+        }
+
+    }
     //----------------------------------
     //PUBLIC VARIABLES
     //----------------------------------
@@ -49,12 +83,14 @@ public class UIContainer : MonoBehaviour
     public Transform cam;
 
 
-    //----------------------------------
-    //METHODS
-    //----------------------------------
 
-    // Use this for initialization
-    void Start()
+
+        //----------------------------------
+        //METHODS
+        //----------------------------------
+
+        // Use this for initialization
+        void Start()
     {
          //Show the size of the container in the indicator space
         size_txt.text = "(" + containerSize.x + "m ," + containerSize.y + "m ," + containerSize.z + "m )";
@@ -112,6 +148,8 @@ public class UIContainer : MonoBehaviour
             customUICanvas.SetActive(true);
         }
         //Resize the container
+        Vector3 containerIR = new Vector3(containerSize.z, containerSize.y,containerSize.x);
+
         packageManager.resizeContainer(containerSize);
     }
     /**

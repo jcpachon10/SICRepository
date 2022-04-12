@@ -23,7 +23,7 @@ public class CameraControl : MonoBehaviour
     //----------------------------------
     private Camera cam;
     //Current objective
-    private Transform currentObjective;
+    public Transform currentObjective;
     //----------------------------------
     //METHODS
     //----------------------------------

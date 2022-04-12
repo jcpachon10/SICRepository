@@ -442,7 +442,7 @@ public class PDFmanager : MonoBehaviour
                     p = new Paragraph();
                     p.Add(new Phrase("    "));
                     p.Add(new Chunk(icon, 0, 0));
-                    p.Add(new Phrase(string.Format(" {0} Quantity: {1} Client: {2} Weight: {3}  L: {4}  W: {5}  H: {6} ",
+                    p.Add(new Phrase(string.Format(" {0} Quantity: {1} Costumer: {2} Weight: {3}  L: {4}  W: {5}  H: {6} ",
                         item.Value.Name1,
                         item.Value.quantity,
                         item.Value.clientId,

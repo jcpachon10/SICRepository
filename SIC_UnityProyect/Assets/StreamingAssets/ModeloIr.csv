@@ -1,4 +1,4 @@
-IdPieza;Tipo;nombre;Cantidad;Peso;Rotación;x;y;z
+IdPieza;Tipo;Nombre;Cantidad;Peso;Rotación;x;y;z
 0;1;caja;2;10;1;50;89;25
 1;2;cilindro;2;10;1;65;200;20
 2;3;Otro;5;1;0;0;0;0

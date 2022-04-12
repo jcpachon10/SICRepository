@@ -95,6 +95,25 @@ public class MenuObjetos : MonoBehaviour
             EstaCerrado = false;
         }
     }
+    public void OnCloseContainer1()
+    {
+
+        if (EstaCerrado == false)
+        {
+            anterior = gameObject.transform.localPosition.y;
+            LeanTween.scale(gameObject, new Vector3(1, 0, 0), 0.1f);
+            LeanTween.moveLocalY(gameObject, 155, 0.1f);
+            EstaCerrado = true;
+
+            //.setOnComplete(DestroyMe);
+        }
+        else
+        {
+            LeanTween.moveLocalY(gameObject, anterior, 0.1f);
+            LeanTween.scale(gameObject, new Vector3(1, 1, 1), 0.1f);
+            EstaCerrado = false;
+        }
+    }
     void DestroyMe()
     {
         Destroy(gameObject);

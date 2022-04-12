@@ -20,6 +20,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using Common;
 using UnityEditor;
+using UnityEngine.Networking;
 
 public class PackageManajer : MonoBehaviour
 {
@@ -143,6 +144,10 @@ public class PackageManajer : MonoBehaviour
     public Vector3 containerSize;
     //The transform of the container
     public Transform containerTransform;
+    //Container 
+    public GameObject containerGO;
+    //Parent Container
+    public RectTransform ParentContainer;
     //Singleton instance
     public static PackageManajer instance;
     //The package types for each package
@@ -150,7 +155,7 @@ public class PackageManajer : MonoBehaviour
     //The package types for each package
     public Dictionary<int, PackageType> CopypTypes;
     //lista de objetos a cargar
-    private List<GameObject> packages;
+    public List<GameObject> packages;
     private List<GameObject> packagesUI;
     public List<GameObject> listUi;
 
@@ -246,7 +251,7 @@ public class PackageManajer : MonoBehaviour
     //toogle of Client View
     public Toggle VistaClient;
     //Bool of the color depent of the group of the package
-    private bool groupColor;
+    public bool groupColor;
     //Controller of the taps
     public TabGroup tapGroup;
     //Carga tap
@@ -260,16 +265,17 @@ public class PackageManajer : MonoBehaviour
     //msgBox
     public GameObject alerta;
     public Text alertext;
+    public GameObject excelAbierto;
     //RactiveFuntion
     public  int counterActive;
     //private Process process;
     private Process process = new Process();
-    private bool inProcess=false;
+    public bool inProcess=false;
     public GameObject bloking;
     //wieght limit
     public InputField maxWeight_iF;
-    private float maxWeight;
-    private bool maxWeight_bol;
+    public float maxWeight;
+    public bool maxWeight_bol;
     //Select type
     private int selectType_int;
     //Pallet
@@ -281,6 +287,18 @@ public class PackageManajer : MonoBehaviour
     //Panel of Loading spaces
     public GameObject loadingSpacesPanel;
     //Truck
+    //Camara Controil
+    public CameraControl cameraControl;
+    //number Container
+    public int currentContainer=1;
+    //text number containner borrar
+    public Text esEste;
+    public int numContainers=1;
+    //MultiUIcontainer
+
+    public MultUIContainer multUiContainer;
+    //Estamos en un Mutiple contenedor
+    public bool multBool=false;
     //----------------------------------
     //METHODS
     //----------------------------------
@@ -341,7 +359,7 @@ public class PackageManajer : MonoBehaviour
             }
 
         }
-       
+
         /*/
         //Animar barra de cargue
         if (loading_bar)
@@ -357,263 +375,25 @@ public class PackageManajer : MonoBehaviour
             }
         } */
 
-        volumen_total = containerSize.x * containerSize.y * containerSize.z;
-        total_Volume.text = volumen_total + " m3";
-        used_Volume.text = volumen_ocupado+" m3";
-        free_Volume.text = volumen_total - volumen_ocupado + " m3";
-        nombre_container.text = "Contenedor "+containerTransform.localScale.x+" m x "+
-            containerTransform.localScale.y + " m x "+
-            containerTransform.localScale.z + " m  " ;
+        if (!multBool)
+        {
+
+            volumen_total = containerSize.x * containerSize.y * containerSize.z;
+            total_Volume.text = volumen_total + " m3";
+            used_Volume.text = volumen_ocupado + " m3";
+            free_Volume.text = volumen_total - volumen_ocupado + " m3";
+            nombre_container.text = containerTransform.localScale.x + " m x " +
+                containerTransform.localScale.y + " m x " +
+                containerTransform.localScale.z + " m  ";
+        }
      
             
     }
 
-    //--------------------------------------------------------------
+    
+     //--------------------------------------------------------------
     //Update data, play multidrop y print the results
     //--------------------------------------------------------------
-    public async void runAlgorith()
-    { if (!activeFuntion)
-        {
-            try
-            {
-                activeFuntion = true;
-                //vaciar contenedor
-                vaciar();
-                if (pTypes.Count == 0)
-                {
-                    activeFuntion = false;
-                    NoTypes.SetActive(true);
-                    Debug.LogError("Por favor cargar paquete");
-                    throw new NullReferenceException("Exception Message");
-                }
-                //-----------------
-                //Reiniciar valores
-                //-----------------
-                peso = 0;
-                float num = 0;
-                intermedio.Clear();
-                
-                //reset number of clients
-                numClient=0;
-
-                //Array.Clear(intermedio, 0, intermedio.Length);
-                foreach (PackageType pType in pTypes.Values)
-
-                {
-                    pType.packagePositions.Clear();
-                    pType.endPositions.Clear();
-
-                    if (numClient <= pType.clientId)
-                    {
-                        numClient = pType.clientId+1;
-                        
-                    }
-                }
-
-                //----------------------------
-                //Crear archivo para multridop
-                //-----------------------------
-                //try { p6 = int.Parse(UIRunAlgorithm[0].text); p7 = int.Parse(UIRunAlgorithm[1].text); } catch (Exception) { }
-                ArrayList mymessage = new ArrayList();
-
-                //Number of packages and number of clients
-                mymessage.Add(pTypes.Count + "\t" + numClient + "\n");
-                //Container Size
-                mymessage.Add(containerSize.x * 100 + "\t" + containerSize.z * 100 + "\t" + containerSize.y * 100 + "\n");
-                foreach (PackageType ptype in pTypes.Values)
-                {
-                    /*
-                    if (ptype.maxForce.x >= 4000000)
-                    {
-                        ptype.maxForce.x = 4000000;
-                    }
-                    if (ptype.maxForce.y >= 4000000)
-                    {
-                        ptype.maxForce.y = 4000000;
-                    }
-                    if (ptype.maxForce.z >= 4000000)
-                    {
-                        ptype.maxForce.z = 4000000;
-                    }
-                    */
-                    //pId, Largo, Largo Vertical, Ancho, Ancho vertical, Alto, Alto vertical, Cantidad,Peso, Soporte largo, Soporte Ancho, Soporte Alto, Group Id,Destino
-                    mymessage.Add(ptype.packageId + "\t" + ptype.packageSize.x + "\t" + ptype.verticalPos.x + "\t" + ptype.packageSize.z + "\t" + ptype.verticalPos.z + "\t" + ptype.packageSize.y + "\t" + ptype.verticalPos.y + "\t"
-                            + ptype.quantity + "\t" + ptype.weight + "\t" + ptype.maxForce.x + "\t" + ptype.maxForce.y + "\t" + ptype.maxForce.z + "\t" + ptype.clientId + "\t" + 0 + "\t" + "\n");
-
-                    
-                }
-                string fileWrite = string.Format("{0}/StreamingAssets/Multidrop/{1}",
-                 UnityEngine.Application.dataPath, "file.txt");
-
-                StreamWriter sw = new StreamWriter(fileWrite);
-                foreach (string message in mymessage)
-                {
-
-                    sw.WriteLine(message);
-                }
-                sw.Close();
-               
-                ProcessStartInfo startInfo =  process.StartInfo;
-
-                startInfo.FileName = string.Format("{0}/StreamingAssets/Multidrop/{1}",
-                UnityEngine.Application.dataPath, "Multidrop.exe");
-                startInfo.WorkingDirectory= string.Format("{0}/StreamingAssets/Multidrop",
-                UnityEngine.Application.dataPath);
-                //Daneses (Visibilidad y apilamiento)
-                //Sesquia (Alcanzable)
-                //Juanqueria (pared)
-                //Nombre opcion(1-Clientes(Se pueden apilar) 2-Pesos 3-Pared invisibles)
-                startInfo.Arguments = string.Format("{0}/StreamingAssets/Multidrop/{1}",
-                UnityEngine.Application.dataPath, "file.txt 1   1   1   3   2  1000");
-                //StartInfo.Arguments = "Extra Arguments to Pass to the Program";
-                startInfo.CreateNoWindow = true;
-                startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-                //startInfo.UseShellExecute = true;
-                // *** Redirect the output ***
-                //startInfo.RedirectStandardError = true;
-                //startInfo.RedirectStandardOutput = true;
-
-                process.Start();
-
-                //hasAnswer = true;
-                Debug.Log("inicio");
-
-                //Animación cargue
-                LoadBar.enabled = true;
-                TimeLeft = 0;
-                loading_bar = true;
-                await Task.Delay(2000);
-                Debug.Log("fin");
-                process.WaitForExit();
-
-
-                string path1 = string.Format("{0}/StreamingAssets/Multidrop/{1}",
-                UnityEngine.Application.dataPath, "temp.txt");
-             
-
-                validateDelete();
-                //------------------------
-                //Initialize the reading
-                //-------------------------
-                theSourceFile = new FileInfo(path1);
-                reader = theSourceFile.OpenText();
-
-
-                //First Line
-                text = reader.ReadLine();
-                string[] split = text.Split('\t');
-                int totalPcs = int.Parse(split[0]);
-                resizeContainer(new Vector3(float.Parse(split[2]), float.Parse(split[4]), float.Parse(split[3])) / 100);
-                ;
-                //Second Line
-                text = reader.ReadLine();
-                split = text.Split('\t');
-                volumen_ocupado = float.Parse(split[0]) / 1000000;
-                //Read the packages
-                string[] lines = System.IO.File.ReadAllLines(path1);
-                //creara contador de grupo actual
-                numGroups = 0;
-                
-                //----
-                for (int i = 2; i < lines.Length; i++)
-                {
-                    string[] split1 = lines[i].Split('\t');
-
-
-
-
-                    //Read Package
-                    Vector3 endPosition = new Vector3(float.Parse(split1[3]), float.Parse(split1[5]), float.Parse(split1[4])) / 100;
-                    Vector3 packPosition = new Vector3(float.Parse(split1[0]), float.Parse(split1[2]), float.Parse(split1[1])) / 100;
-                    Vector3 packSize = (endPosition - packPosition) * 100;
-                    //Evitar error de decimales
-                    packSize = new Vector3(Convert.ToSingle(Math.Round(packSize.x, 2)), Convert.ToSingle(Math.Round(packSize.y, 2)), Convert.ToSingle(Math.Round(packSize.z, 2)));
-
-                    int packId = int.Parse(split1[6]);
-                    int packGroup = int.Parse(split1[7]);
-                    int packClient = int.Parse(split1[8]);
-
-                    //Check If package type exist 
-                    //newPackage(packSize, array_quantity[packId], 1, false, packId);
-
-
-                    PackageType pType = pTypes[packId];
-                    //pType.AddPosition(packPosition, endPosition);
-                    //updatePackageValues(packId, packSize,pTypes[packId].verticalPos, pTypes[packId].maxForce, pType.quantity, pType.weight, pTypes[packId].Name1,packGroup);
-                    //Debug.Log(packId + " tiene " + pType.quantity);
-
-                    //Calcular peso
-                    if (packPosition.x < containerSize.x)
-                    {
-                        peso += (pType.weight) / 10000;
-                        
-                    }
-                    //Contar paquetes que no se cargaron
-                    else
-                    {
-                        Vector3 adjust = new Vector3(1f, 0f, 0f);
-                        //add position
-                        packPosition = packPosition + adjust;
-                        endPosition= endPosition + adjust;
-                        bool keyExists = intermedio.ContainsKey(packId);
-                        if (!keyExists)
-                        {
-                            intermedio.Add(packId, 0f);
-                        }
-                        intermedio[packId] += 1f;
-                    }
-                    //add position
-                    pType.AddPosition(packPosition, endPosition);
-                    //----------------------------
-                    //Cargar los paquetes
-                    //-----------------------------
-
-                    if (packGroup != numGroups)
-                    {
-
-                        snapCam.group = packGroup - 1;
-                        snapCam.callTakeSnapShot();
-                        await Task.Delay(5);
-                        numGroups = packGroup;
-                    }
-                    // Crear paquetes en base al prefab
-                    GameObject go = GameObject.Instantiate(packagePrefab);
-                    go.transform.SetParent(parent);
-                    packages.Add(go);
-                    go.GetComponent<Package>().setPackageValues(endPosition - packPosition
-                        , packPosition, packId, packageColor[packId], pType.weight, packClient, packGroup, pType.Name1);
-                    Vector3 size1 = endPosition - packPosition;
-
-                    if (i == lines.Length - 1)
-                    {
-
-                        snapCam.group = packGroup;
-                        snapCam.callTakeSnapShot();
-                        await Task.Delay(5);
-                        numGroups = packGroup;
-                    }
-
-                    //----
-
-                }
-                label_peso.text = peso + " kg";
-                reader.Close();
-                //Give the option to add a new loading
-                showNewLoading();
-                //ajustar canvas
-                EstadoCargado();
-                //Reactive funtion 
-                activeFuntion = false;
-            }
-            
-            catch(System.Exception)
-            {
-                Debug.Log("callo en error");
-                activeFuntion = false;
-                return;
-            }
-        }
-    }
    
     public  void runAlgorithm()
     {
@@ -702,18 +482,27 @@ public class PackageManajer : MonoBehaviour
                 sw.Close();
 
                 ProcessStartInfo startInfo = process.StartInfo;
-
+                /*
                 startInfo.FileName = string.Format("{0}/StreamingAssets/Multidrop/{1}",
                 UnityEngine.Application.dataPath, "Multidrop.exe");
                 startInfo.WorkingDirectory = string.Format("{0}/StreamingAssets/Multidrop",
-                UnityEngine.Application.dataPath);
-                //Daneses (Visibilidad y apilamiento)
-                //Sesquia (Alcanzable)
-                //Juanqueria (pared)
-                //Nombre opcion(1-Clientes(Se pueden apilar) 2-Pesos 3-Pared invisibles)
-                //startInfo.Arguments = string.Format("{0}/StreamingAssets/Multidrop/{1}",
-                //UnityEngine.Application.dataPath, "file.txt 1   1   1   3   2  20");
-                 startInfo.Arguments = "file.txt 1   1   1   3   2  20";
+                UnityEngine.Application.dataPath);*/
+
+                startInfo.FileName = string.Format("{0}/Multidrop/{1}",
+                UnityEngine.Application.streamingAssetsPath, "Multidrop.exe");
+                print("ruta 1" + UnityEngine.Application.dataPath);
+                print("ruta 2" + UnityEngine.Application.streamingAssetsPath);
+                startInfo.WorkingDirectory = string.Format("{0}/Multidrop",
+                UnityEngine.Application.streamingAssetsPath); 
+
+                  //Daneses (Visibilidad y apilamiento)
+                  //Sesquia (Alcanzable)
+                  //Juanqueria (pared)
+                  //Nombre opcion(1-Clientes(Se pueden apilar) 2-Pesos 3-Pared invisibles)
+                  //startInfo.Arguments = string.Format("{0}/StreamingAssets/Multidrop/{1}",
+                  //UnityEngine.Application.dataPath, "file.txt 1   1   1   3   2  20");
+
+                  startInfo.Arguments = "file.txt 1   1   1   3   2  50";
                 //StartInfo.Arguments = "Extra Arguments to Pass to the Program";
                 startInfo.CreateNoWindow = true;
                 startInfo.WindowStyle = ProcessWindowStyle.Hidden;
@@ -936,7 +725,7 @@ public class PackageManajer : MonoBehaviour
     //--------------------------------------------------------------
     public void NewPackageButtom()
     {
-        int idP = 1;
+        int idP = 0;
         while (pTypes.ContainsKey(idP))
         {
             idP++;
@@ -1112,11 +901,13 @@ public class PackageManajer : MonoBehaviour
         }
         containerTransform.position = Vector3.zero;
         Camera.position = new Vector3(10f+newSize.x,Camera.position.y,Camera.position.z);
-        
+        float vol = containerSize.x * containerSize.y * containerSize.z;
+        total_Volume.text = vol + "";
+        free_Volume.text = vol + "";
     }
 
     //Unhabilited
-    public async void loadPackages()
+    public  void loadPackages()
     {
       
         foreach (GameObject pack in packages)
@@ -1808,7 +1599,7 @@ public class PackageManajer : MonoBehaviour
                         line = i;
                         if (!string.IsNullOrEmpty(lines[i]))
                         {
-                            
+                           
                             string[] split1 = lines[i].Split(';');
 
                             //Cargar datos
@@ -1867,6 +1658,7 @@ public class PackageManajer : MonoBehaviour
                                  Mathf.Floor(maxForceP.z * 10000f / (packSize.x * packSize.z))
                                  ), quantity, weight, name, client);
                         }
+                       
 
                     }
                 }
@@ -2277,7 +2069,119 @@ public class PackageManajer : MonoBehaviour
         truck.SetActive(true);
         floor.transform.position = new Vector3(0.7558f, -1.25f, 0);
     }
-    
+    public void disableLoadingSpace()
+    {
+        loadingSpacesPanel.SetActive(false);
+        truck.SetActive(false);
+        pallet.SetActive(false);
+        floor.transform.position = new Vector3(0.7558f,-0.2f, 0);
+    }
+
+    public void createContainers(InputField numConatinersInputField)
+    {
+         numContainers = int.Parse(numConatinersInputField.text);
+        for (int i = 1; i < numContainers; i++)
+        {
+            GameObject newContainer = Instantiate(containerGO);
+            newContainer.transform.position = new Vector3(containerGO.transform.position.x+15f*i, containerGO.transform.position.y, containerGO.transform.position.z) ;
+            newContainer.transform.SetParent(ParentContainer.transform);
+        }
+
+    }
+   
+    public void createMultiFile(string folder)
+    {
+        if (!activeFuntion)
+        {
+            try
+            {
+                activeFuntion = true;
+                //Reiniciar intermeido
+                intermedio.Clear();
+                if (pTypes.Count == 0)
+                {
+                    activeFuntion = false;
+                    NoTypes.SetActive(true);
+                    Debug.LogError("Por favor cargar paquete");
+                    throw new NullReferenceException("Exception Message");
+                }
+                //-----------------
+                //Reiniciar valores
+                //-----------------
+                peso = 0;
+                float num = 0;
+                intermedio.Clear();
+
+                //reset number of clients
+                numClient = 0;
+
+                //Array.Clear(intermedio, 0, intermedio.Length);
+                foreach (PackageType pType in pTypes.Values)
+
+                {
+                    pType.packagePositions.Clear();
+                    pType.endPositions.Clear();
+
+                    if (numClient <= pType.clientId)
+                    {
+                        numClient = pType.clientId + 1;
+
+                    }
+                }
+
+                //----------------------------
+                //Crear archivo para multridop
+                //-----------------------------
+                //try { p6 = int.Parse(UIRunAlgorithm[0].text); p7 = int.Parse(UIRunAlgorithm[1].text); } catch (Exception) { }
+                ArrayList mymessage = new ArrayList();
+
+                //Number of packages and number of clients
+                mymessage.Add(pTypes.Count + "\t" + numClient + "\n");
+                //Container Size
+                mymessage.Add(containerSize.x * 100 + "\t" + containerSize.z * 100 + "\t" + containerSize.y * 100 + "\n");
+                foreach (PackageType ptype in pTypes.Values)
+                {
+
+                    if (ptype.maxForce.x >= 40000)
+                    {
+                        ptype.maxForce.x = 4000000;
+                    }
+                    if (ptype.maxForce.y >= 40000)
+                    {
+                        ptype.maxForce.y = 4000000;
+                    }
+                    if (ptype.maxForce.z >= 40000)
+                    {
+                        ptype.maxForce.z = 4000000;
+                    }
+
+                    //pId, Largo, Largo Vertical, Ancho, Ancho vertical, Alto, Alto vertical, Cantidad,Peso, Soporte largo, Soporte Ancho, Soporte Alto, Group Id,Destino
+                    mymessage.Add(ptype.packageId + "\t" + ptype.packageSize.x + "\t" + ptype.verticalPos.x + "\t" + ptype.packageSize.z + "\t" + ptype.verticalPos.z + "\t" + ptype.packageSize.y + "\t" + ptype.verticalPos.y + "\t"
+                            + ptype.quantity + "\t" + ptype.weight + "\t" + ptype.maxForce.x + "\t" + ptype.maxForce.y + "\t" + ptype.maxForce.z + "\t" + ptype.clientId + "\t" + 0 + "\t" +"\n");
+                   
+                }
+                string fileWrite = string.Format("{0}/StreamingAssets/{1}/Algorithm/{2}",
+                 UnityEngine.Application.dataPath,folder, "file.txt");
+
+                StreamWriter sw = new StreamWriter(fileWrite);
+                foreach (string message in mymessage)
+                {
+
+                    sw.WriteLine(message);
+                }
+                sw.Close();
+                activeFuntion = false;
+            }
+            
+            catch (System.Exception)
+            {
+                Debug.Log("callo en error");
+                activeFuntion = false;
+                return;
+            }
+        }
+    }
+
 }
 
 

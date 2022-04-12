@@ -13,6 +13,7 @@ using System.Runtime.InteropServices;
 using System.Collections.Specialized;
 using System.Security.Cryptography;
 using Common;
+using System.Threading.Tasks;
 
 public class IrregularManager : MonoBehaviour
 {
@@ -53,6 +54,7 @@ public class IrregularManager : MonoBehaviour
         public int[] trianglesMesh;
         //vlidate rotation
         public bool rotation;
+      
         //----------------------------
         //Methods
         //----------------------------
@@ -149,10 +151,13 @@ public class IrregularManager : MonoBehaviour
     private float TimeLeft;
     //process exe
     private Process process = new Process();
+    //process exe
+    private Process process1 = new Process();
     //define if proces is playing
     //0-No run 
     //1-run
-    bool inProcess = false;
+    public bool inProcess = false;
+    public bool inProcess1 = false;
     public string fileName = "";
     private float error = 0.0001f;
     //Blocked panel
@@ -168,7 +173,7 @@ public class IrregularManager : MonoBehaviour
     // Variables Cilindro
     public float Diametro = 0;
     public float Altura = 0;
-    private int Refinamiento = 32;
+    private int Refinamiento = 12;
 
     // 1 Read data
     private List<int> idPieza; // id de la pieza
@@ -177,11 +182,21 @@ public class IrregularManager : MonoBehaviour
     // 2 GameObjects
 
     private List<GameObject> myGameObjects;
+    //validate the color of the miniatura
+    public bool validate=false;
 
+    //Largo del contenedor
+    public Text LengthLabel;
+    public Text WeightLabel;
+    public GameObject validData;
+    public Text validDataText;
+
+    //Toggle gravity
+    public bool gravitybool;
     // FUNCIONES
     void Start()
     {
-
+        gravitybool = true;
         //tapGroup.OnTabSelected(CargaTap);
         pTypesIR = new Dictionary<int, objectsType>();
         //intermedio = new Dictionary<float, float>();
@@ -214,7 +229,26 @@ public class IrregularManager : MonoBehaviour
             }
             if (process.HasExited)
             {
+                print("Se corre la segunda parte");
                 runalgorim1();
+            }
+
+        }
+       
+        else if (inProcess1)
+        {
+            if (TimeLeft < 1)
+            {
+                TimeLeft += Time.deltaTime;
+                LoadBar.fillAmount = TimeLeft;
+            }
+            else
+            {
+                TimeLeft = 0;
+            }
+            if (process1.HasExited)
+            {
+                runalgorimSPP1();
             }
 
         }
@@ -478,9 +512,10 @@ public class IrregularManager : MonoBehaviour
         reestablecer();
         //active CSV menu
         pm.menuCsv.SetActive(false);
-        
+
 
         //Read the fileDlg
+       
         OpenFileDlg pth = new OpenFileDlg();
         pth.structSize = System.Runtime.InteropServices.Marshal.SizeOf(pth);
         //pth.filter = "CSV files(*.csv)| *.csv | All files(*.*) | *.* "; 
@@ -501,7 +536,15 @@ public class IrregularManager : MonoBehaviour
             //Validate if its a csv file
             if (filepath.Substring(pth.file.Length - 3) == "csv")
             {
-                textAssetData = new TextAsset(File.ReadAllText(filepath));
+                try
+                {
+                    textAssetData = new TextAsset(File.ReadAllText(filepath));
+                }
+                catch
+                {  
+                    pm.excelAbierto.SetActive(true);
+                    return;
+                }
                 string[] lines = textAssetData.text.Split(new string[] { "\n" }, StringSplitOptions.None);
                 createUi(lines);
 
@@ -516,7 +559,9 @@ public class IrregularManager : MonoBehaviour
     public void createUi(string[] lines)
     {
         int line = 0;
-        List<Vector3> tempVertices = new List<Vector3>();
+        int id = 0;
+        int packId = 0;
+        List <Vector3> tempVertices = new List<Vector3>();
         try
         {
             //read lines
@@ -530,16 +575,37 @@ public class IrregularManager : MonoBehaviour
 
                     //Cargar datos
                     //id
-                    int packId = int.Parse(split1[0]);
+                    if (int.Parse(split1[0]) < 0)
+                    {
+                        throw new InvalidOperationException("Logfile cannot be read-only");
+                    }
+                    else if (int.Parse(split1[0]) == id)
+                    {
+                        packId = int.Parse(split1[0]);
+                        id++;
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("Logfile cannot be read-only");
+                    }
+                    //Tipo
+                    if (int.Parse(split1[1]) < 1 || int.Parse(split1[1]) > 3)
+                        throw new InvalidOperationException("Logfile cannot be read-only");
+                    //Class of other object
+                    int packClass = int.Parse(split1[1]);
                     //name
                     string name = split1[2];
                     //quantity
+                    if (int.Parse(split1[3]) < 1)
+                        throw new InvalidOperationException("Logfile cannot be read-only");
                     int quantity = int.Parse(split1[3]);
+                    //weight
+                    if (float.Parse(split1[4]) <= 0)
+                        throw new InvalidOperationException("Logfile cannot be read-only");
                     if (split1[4].Contains("."))
                     {
                         split1[4] = split1[4].Replace(".", ",");
                     }
-                    //weight
                     float weight = float.Parse(split1[4]);
                     //rotation
                     bool b_rot = false;
@@ -552,14 +618,36 @@ public class IrregularManager : MonoBehaviour
                     {
                         b_rot = false;
                     }
-                    else if (rotation > 1)
+                    else
                     {
                         throw new InvalidOperationException("Logfile cannot be read-only");
                     }
                     //Size
-                    Vector3 packSize = new Vector3(int.Parse(split1[6]), int.Parse(split1[7]), int.Parse(split1[8]));
-                    //Class of other object
-                    int packClass = int.Parse(split1[1]);
+                    Vector3 packSize = new Vector3();
+                    if (packClass == 1)
+                    {
+                        if (float.Parse(split1[6]) <= 0 || float.Parse(split1[7]) <= 0 || float.Parse(split1[8]) <= 0)
+                            throw new InvalidOperationException("Logfile cannot be read-only");
+                        packSize = new Vector3(float.Parse(split1[6]), float.Parse(split1[7]), float.Parse(split1[8]));
+
+                    }
+                    else if (packClass==2)
+                    {
+                        if (float.Parse(split1[6]) <= 0 || float.Parse(split1[7]) <= 0)
+                            throw new InvalidOperationException("Logfile cannot be read-only");
+                        packSize = new Vector3(float.Parse(split1[6]), float.Parse(split1[7]), float.Parse(split1[6]));
+
+                    }
+                    else
+                    {
+                        if (float.Parse(split1[6]) == 0 && float.Parse(split1[7]) == 0 && float.Parse(split1[8]) == 0)
+                        {
+                            packSize = new Vector3(float.Parse(split1[6]), float.Parse(split1[7]), float.Parse(split1[6]));
+                        }
+                        else {
+                            throw new InvalidOperationException("Logfile cannot be read-only");
+                        }
+                    }
 
                     newObject(packSize, packClass, quantity, weight, b_rot, packId, name);
                     //Read vertex for OTHER objects
@@ -574,13 +662,18 @@ public class IrregularManager : MonoBehaviour
                         while (contador < lines.Length)
                         {
                             string[] split2 = lines[contador].Split(';');
-                            tempVertices.Add(new Vector3(int.Parse(split2[6]), int.Parse(split2[7]), int.Parse(split2[8])));
-                            contador++;
                             if (!string.IsNullOrEmpty(split2[0]) || contador == lines.Length - 1)
                             {
                                 break;
                             }
+                            tempVertices.Add(new Vector3(int.Parse(split2[6]), int.Parse(split2[7]), int.Parse(split2[8])));
+                            contador++;
+                           
+
                         }
+                        if(tempVertices.Count<4)
+                            throw new InvalidOperationException("Logfile cannot be read-only");
+
                         Vector3[] vecMesh = tempVertices.ToArray();
                         pTypesIR[packId].verticesMesh = vecMesh;
                     }
@@ -592,9 +685,9 @@ public class IrregularManager : MonoBehaviour
 
         catch (System.Exception)
         {
-            pm.alertext.text = "El archivo .csv contiene un error en sus datos en la linea " + (line + 1);
-            pm.alerta.SetActive(true);
-            //pm.vaciar();
+           validDataText.text = "El archivo .csv contiene un error en sus datos en la linea " + (line + 1);
+           validData.SetActive(true);
+            reestablecer();
             //pm.reestablecer();
 
         }
@@ -780,7 +873,7 @@ public class IrregularManager : MonoBehaviour
     //--------------------------
     // create the objects
     //-------------------------
-    public void create()
+    public  void create()
     {
         //Animación cargue
         LoadBar.enabled = true;
@@ -811,6 +904,39 @@ public class IrregularManager : MonoBehaviour
             }
         }
         runalgorim();
+        pm.EstadoCargado();
+    }
+    public void createSPP()
+    {
+        //Animación cargue
+        LoadBar.enabled = true;
+        TimeLeft = 0;
+        loading_bar = true;
+
+        //Read each otype
+        foreach (objectsType oType in pTypesIR.Values)
+        {
+            if (oType.classIR == 1)
+            {
+                Lx = oType.packageSize.x;
+                Ly = oType.packageSize.y;
+                Lz = oType.packageSize.z;
+                saveVertex(oType.packageId, oType.classIR, verticesCubo());
+            }
+            else if (oType.classIR == 2)
+            {
+                Diametro = oType.packageSize.z;
+                Altura = oType.packageSize.y;
+                saveVertex(oType.packageId, oType.classIR, verticesCilindro());
+            }
+            else if (oType.classIR == 3)
+            {
+                List<Vector3> vertices2 = oType.verticesMesh.ToList();
+
+                saveVertex(oType.packageId, oType.classIR, vertices2);
+            }
+        }
+        runalgorimSPP();
         pm.EstadoCargado();
     }
     //--------------------------
@@ -1015,7 +1141,7 @@ public class IrregularManager : MonoBehaviour
     //--------------------------
     // Create teh txt input Call the .exe and use view for read the output the iobjects
     //-------------------------
-    public void runalgorim()
+    public async void runalgorim()
     {
         //initialitate values
         vaciarContenedor();
@@ -1047,7 +1173,8 @@ public class IrregularManager : MonoBehaviour
         msg = msg.Remove(msg.Length - 1);
         sw.WriteLine(msg);
         msg = "";
-        //rotations of each o   
+        /*
+        //rotations irregular.exe 
         foreach (objectsType oType in pTypesIR.Values)
         { 
           if(oType.rotation)
@@ -1063,10 +1190,26 @@ public class IrregularManager : MonoBehaviour
                 sw.WriteLine("0");
             }
          
-        }
+        }*/
+        //Rotations SKP.exe
+        foreach (objectsType oType in pTypesIR.Values)
+        {
+            if (oType.rotation)
+            {
+                sw.WriteLine("0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63");
+            }
+            else if (oType.classIR == 2)
+            {
+                sw.WriteLine("16");
+            }
+            else
+            {
+                sw.WriteLine("0 4 8 12");
+            }
 
+        }
         //Rotaciones
-        for(int rx=0; rx<=3; rx++)
+        for (int rx=0; rx<=3; rx++)
         {
             for (int ry = 0; ry <= 3; ry++)
             {
@@ -1101,37 +1244,190 @@ public class IrregularManager : MonoBehaviour
         }
         sw.Close();
 
-
         //Start process
         ProcessStartInfo startInfo =process.StartInfo;
 
-        startInfo.FileName = string.Format("{0}/StreamingAssets/OtherObjects/{1}",
-        UnityEngine.Application.dataPath, "ProjectCplex.exe");
+        //startInfo.FileName = string.Format("{0}/StreamingAssets/OtherObjects/{1}", UnityEngine.Application.dataPath, "Irregular3.exe");
+        startInfo.FileName = string.Format("{0}/StreamingAssets/OtherObjects/{1}", UnityEngine.Application.dataPath, "SKP1.exe");
+
         startInfo.WorkingDirectory = string.Format("{0}/StreamingAssets/OtherObjects",
         UnityEngine.Application.dataPath);
-        
-        
-        startInfo.Arguments = "-t 1000 -nThreads 4 -ins prueba -crit 1 -Lx 200 -Ly 200";
+
+        //string input = "-t 10 -ins prueba -Lx " + pm.containerSize.z * 100 + " -Ly " + pm.containerSize.y * 100;
+
+        string input = "-t 30 -ins prueba -Lx " + pm.containerSize.z*100 + " -Ly " + pm.containerSize.y*100+ " -Lz " + pm.containerSize.x * 100;
+
+       // startInfo.Arguments = input;
+        startInfo.Arguments = input;
         process.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
         process.EnableRaisingEvents = true;
-        process.Exited += new EventHandler(myProcess_Exited);
         // Starts the process
         process.Start();
+        print("Se corrio");
         inProcess = true;
         bloking.SetActive(true);
     }
-    public void runalgorim1 ()
+    public async void runalgorim1 ()
     {
         inProcess = false;
         bloking.SetActive(false);
         view.fileName1 = string.Format("{0}/StreamingAssets/OtherObjects/{1}",
             UnityEngine.Application.dataPath, "prueba.txt");
-        view.fileName2 = string.Format("{0}/StreamingAssets/OtherObjects/{1}",
-            UnityEngine.Application.dataPath, "respuesta.txt");
+        //view.fileName2 = string.Format("{0}/StreamingAssets/OtherObjects/{1}", UnityEngine.Application.dataPath, "respuesta.txt");
+        view.fileName2 = string.Format("{0}/StreamingAssets/OtherObjects/{1}", UnityEngine.Application.dataPath, "Resprueba.txt");
         //process.WaitForExit(1000 * 60 * 5);    // Wait up to five minutes.
         view.ReadDataPiezas();
         view.ReadDataPos();
-        view.Objetos();
+        view.Objetos2();
+        IrrIndicadores("Resprueba");
+        validate = true;
+
+        validate = false;
+    }
+    public void  IrrIndicadores(string file)
+    {
+        string path1 = string.Format("{0}/StreamingAssets/OtherObjects/{1}.txt",
+                UnityEngine.Application.dataPath, file);
+        //Read the packages
+        string[] lines = System.IO.File.ReadAllLines(path1);
+        string[] split1 = lines[1].Split(' ');
+
+
+        decimal MyFloat;
+        Decimal.TryParse(split1[3], System.Globalization.NumberStyles.Float, null, out MyFloat);
+        print("el valor es "+ float.Parse(split1[3],CultureInfo.InvariantCulture));
+        pm.volumen_ocupado = float.Parse(split1[3], CultureInfo.InvariantCulture);
+
+    }
+    public async void runalgorimSPP()
+    {
+        //initialitate values
+        vaciarContenedor();
+        int totalVertex = 0;
+        int counterVertex = 0;
+        string msg = "";
+        string fileWrite = string.Format("{0}/StreamingAssets/OtherObjects/{1}",
+            UnityEngine.Application.dataPath, "prueba.txt");
+
+        //write the input values
+        StreamWriter sw = new StreamWriter(fileWrite);
+        //number of types
+        sw.WriteLine(pTypesIR.Keys.Count);
+        //rotations
+        sw.WriteLine("64");
+        //number of types
+        sw.WriteLine(pTypesIR.Keys.Count);
+        //Number of vertex
+        foreach (objectsType oType in pTypesIR.Values)
+        {
+            totalVertex += oType.verticesMesh.Length;
+        }
+        sw.WriteLine(totalVertex);
+        //Quantity of objects
+        foreach (objectsType oType in pTypesIR.Values)
+        {
+            msg += oType.quantity + " ";
+        }
+        msg = msg.Remove(msg.Length - 1);
+        sw.WriteLine(msg);
+        msg = "";
+        //rotations of each o   
+        foreach (objectsType oType in pTypesIR.Values)
+        {
+            if (oType.rotation)
+            {
+                sw.WriteLine("0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63");
+            }
+            else if (oType.classIR == 2)
+            {
+                sw.WriteLine("16");
+            }
+            else
+            {
+                sw.WriteLine("0");
+            }
+
+        }
+
+        //Rotaciones
+        for (int rx = 0; rx <= 3; rx++)
+        {
+            for (int ry = 0; ry <= 3; ry++)
+            {
+                for (int rz = 0; rz <= 3; rz++)
+                {
+                    sw.WriteLine((rx * 90) + " " + (ry * 90) + " " + (rz * 90));
+                }
+            }
+        }
+        foreach (objectsType oType in pTypesIR.Values)
+        {
+            sw.WriteLine(oType.packageId);
+        }
+        foreach (objectsType oType in pTypesIR.Values)
+        {
+            for (int i = 0; i < oType.verticesMesh.Length; i++)
+            {
+                msg += counterVertex + " ";
+                counterVertex++;
+            }
+            msg = msg.Remove(msg.Length - 1);
+            sw.WriteLine(msg);
+            msg = "";
+        }
+
+        foreach (objectsType oType in pTypesIR.Values)
+        {
+            foreach (Vector3 tempVec in oType.verticesMesh)
+            {
+                sw.WriteLine(tempVec.x + " " + tempVec.y + " " + tempVec.z);
+            }
+        }
+        sw.Close();
+
+        //Start process
+        ProcessStartInfo startInfo = process1.StartInfo;
+
+        startInfo.FileName = string.Format("{0}/StreamingAssets/OtherObjects/{1}", UnityEngine.Application.dataPath, "Irregular3.exe");
+
+        startInfo.WorkingDirectory = string.Format("{0}/StreamingAssets/OtherObjects",
+        UnityEngine.Application.dataPath);
+
+        string input = "-t 10 -ins prueba -Lx " + pm.containerSize.z * 100 + " -Ly " + pm.containerSize.y * 100;
+
+        // startInfo.Arguments = input;
+        startInfo.Arguments = input;
+        process1.StartInfo.WindowStyle = ProcessWindowStyle.Minimized;
+        process1.EnableRaisingEvents = true;
+        process1.Exited += new EventHandler(myProcess_Exited);
+        // Starts the process
+        process1.Start();
+        inProcess1 = true;
+        bloking.SetActive(true);
+    }
+    public async void runalgorimSPP1()
+    {
+        inProcess1 = false;
+        bloking.SetActive(false);
+        view.fileName1 = string.Format("{0}/StreamingAssets/OtherObjects/{1}",
+            UnityEngine.Application.dataPath, "prueba.txt");
+        //view.fileName2 = string.Format("{0}/StreamingAssets/OtherObjects/{1}", UnityEngine.Application.dataPath, "respuesta.txt");
+        view.fileName2 = string.Format("{0}/StreamingAssets/OtherObjects/{1}", UnityEngine.Application.dataPath, "Resprueba.txt");
+
+        //-------
+        //Leer longitud
+        string[] lines = System.IO.File.ReadAllLines(view.fileName2);
+        string[] split =  lines[2].Split('\t');
+        float largo = float.Parse(split[2])/100;
+        LengthLabel.text = largo + " m";
+        //process.WaitForExit(1000 * 60 * 5);    // Wait up to five minutes.
+        view.ReadDataPiezas();
+        view.ReadDataPos();
+        view.Objetos1();
+        IrrIndicadores("Resprueba");
+        validate = true;
+
+        validate = false;
 
     }
     private void myProcess_Exited(object sender, System.EventArgs e)
@@ -1150,12 +1446,15 @@ public class IrregularManager : MonoBehaviour
         {
             GameObject.Destroy(child.gameObject);
         }
+        pm.intermedio.Clear();
     }
     //--------------------------
     // Restablece todo
     //----------------------------
     public void reestablecer()
     {
+
+
         vaciarContenedor();
         int idP = 0;
         //Conocer el numero de paqutes antes de borrar
@@ -1178,7 +1477,7 @@ public class IrregularManager : MonoBehaviour
             array_quantity[j] = 0;
         }*/
         //Resize the list of objects
-        Lista.sizeDelta = new Vector2(Lista.sizeDelta.x, 370.4893f);
+        Lista.sizeDelta = new Vector2(Lista.sizeDelta.x, 394.6213f);
     }
 
     //--------------------------
@@ -1197,7 +1496,7 @@ public class IrregularManager : MonoBehaviour
             string[] file1 = File.ReadAllLines(string.Format("{0}/StreamingAssets/OtherObjects/{1}",
                 UnityEngine.Application.dataPath, "prueba.txt"));
             string[] file2 = File.ReadAllLines(string.Format("{0}/StreamingAssets/OtherObjects/{1}",
-             UnityEngine.Application.dataPath, "respuesta.txt"));
+             UnityEngine.Application.dataPath, "Resprueba.txt"));
             string path = string.Format("{0}/StreamingAssets/OtherObjects/Save/{1}{2}",
              UnityEngine.Application.dataPath,pm.Titulo.text, ".txt");
             File.Delete(path);
@@ -1257,6 +1556,7 @@ public class IrregularManager : MonoBehaviour
 
             pm.Nombre_Registro.text = pm.Titulo.text;
             pm.Fecha_Registro.text = "" + DateTime.Now;
+            
             pm.tamaño_Contenedor.text = "(" + pm.containerTransform.localScale.x + "m x" + pm.containerTransform.localScale.y + "m x" + pm.containerTransform.localScale.z + "m )";
             txtManagerIR.precargar();
             pm.saveMsg.SetActive(true);
@@ -1331,7 +1631,7 @@ public class IrregularManager : MonoBehaviour
         //process.WaitForExit(1000 * 60 * 5);    // Wait up to five minutes.
         view.ReadDataPiezas();
         view.ReadDataPos();
-        view.Objetos();
+        view.Objetos2();
 
     }
     public void ArePackage()
@@ -1352,6 +1652,11 @@ public class IrregularManager : MonoBehaviour
         inProcess = false;
         process.Kill();
         bloking.SetActive(false);
+    }
+
+    public void activeGravitty(bool active)
+    {
+        gravitybool = active;
     }
 }
 

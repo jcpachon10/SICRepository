@@ -44,28 +44,33 @@ public class IRToggle : MonoBehaviour
             rt.sizeDelta = new Vector2(153f, 26f);
 
         }
-        foreach (float i in packageManajer.intermedio.Keys)
+        if (irregularManager.validate)
         {
-            float num_f = float.Parse(num.text);
-            if (num_f == i && packageManajer.pTypes[int.Parse(num_f + "")].quantity == packageManajer.intermedio[i])
-            {
-                UIminiatura.GetComponent<Image>().color = UiColors[0];
-                cargado = false;
-            }
-            if (num_f == i && packageManajer.pTypes[int.Parse(num_f + "")].quantity > packageManajer.intermedio[i])
-            {
-                UIminiatura.GetComponent<Image>().color = UiColors[1];
-                cargado = false;
-            }
 
-        }
-        if (cargado)
-        {
-            UIminiatura.GetComponent<Image>().color = UiColors[2];
+            foreach (float i in packageManajer.intermedio.Keys)
+            {
+                float num_f = float.Parse(num.text);
+                if (num_f == i && irregularManager.pTypesIR[int.Parse(num_f + "")].quantity == packageManajer.intermedio[i])
+                {
+                    UIminiatura.GetComponent<Image>().color = UiColors[0];
+                    cargado = false;
+                }
+                if (num_f == i && irregularManager.pTypesIR[int.Parse(num_f + "")].quantity > packageManajer.intermedio[i])
+                {
+                    UIminiatura.GetComponent<Image>().color = UiColors[1];
+                    cargado = false;
+                }
+
+            }
+            if (cargado)
+            {
+                UIminiatura.GetComponent<Image>().color = UiColors[2];
+            }
         }
 
 
     }
+
     public void cube(bool mostrar)
     {
         if(mostrar)
@@ -82,6 +87,7 @@ public class IRToggle : MonoBehaviour
         }
         cubePreview.SetActive(mostrar);
         cube_Image.SetActive(mostrar);
+        other_Image.SetActive(!mostrar);
     }
     public void cylinder(bool mostrar)
     {
@@ -96,6 +102,7 @@ public class IRToggle : MonoBehaviour
         }
         cylinderPreview.SetActive(mostrar);
         cylinder_Image.SetActive(mostrar);
+        other_Image.SetActive(!mostrar);
     }
     public void other(bool mostrar)
     {

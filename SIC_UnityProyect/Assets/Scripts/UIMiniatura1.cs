@@ -20,7 +20,7 @@ public class UIMiniatura1 : MonoBehaviour
     public Text Controlador;
     public Text numAct;
     public PackageManajer packageManajer;
-
+    public GlobalLanguage globalLanguage;
 
     // Start is called before the first frame update
     void Start()
@@ -31,7 +31,16 @@ public class UIMiniatura1 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        LabelName.text = Name.text + "  (cliente "+Client.text+")";
+        if(globalLanguage.returnLanguage()=="Español")
+        {
+
+            LabelName.text = Name.text + "  (cliente " + Client.text + ")";
+        }
+        else
+        {
+
+            LabelName.text = Name.text + "  (costumer " + Client.text + ")";
+        }
         try
         {
             LabelMed.text = lenght_Input.text + "x" + height_Input.text + "x" + width_Input.text + " cm   " + weight_input.text + " kg  " + packageManajer.intermedio[float.Parse(numAct.text)] + "/" + quantity_input.text + " und";

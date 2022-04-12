@@ -311,7 +311,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   progressbar: {fileID: 127638384}
-  numscene: 4
+  numscene: 1
 --- !u!1 &542190128
 GameObject:
   m_ObjectHideFlags: 0
